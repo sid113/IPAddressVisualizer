@@ -1,22 +1,26 @@
-Interactive DNS Resolution Visualizer
+# Interactive DNS Resolution Visualizer
+
 An interactive, single-page web visualizer demonstrating the end-to-end lifecycle of resolving a domain name into an IP address.
 
 The application steps through client-side cache checks, local gateway handling, recursive resolver lookups, and iterative queries across Root, TLD, and Authoritative Nameservers—animating the packet flow and querying live DNS-over-HTTPS (DoH) APIs in real time.
 
-Features
-Live DoH Lookups: Queries authentic DNS records via Google Public DNS ([https://dns.google/resolve](https://dns.google/resolve)) with an integrated offline fallback for major domains.
+---
 
-RFC 1034 / 1035 Flow Simulation: Visualizes both recursive and iterative query phases across all layers of the DNS hierarchy.
+## Features
 
-Animated Network Topology: SVG-based network map tracing request and response datagrams with live glowing active node states.
+- **Live DoH Lookups:** Queries authentic DNS records via Google Public DNS (`https://dns.google/resolve`) with an integrated offline fallback for major domains.
+- **RFC 1034 / 1035 Flow Simulation:** Visualizes both recursive and iterative query phases across all layers of the DNS hierarchy.
+- **Animated Network Topology:** SVG-based network map tracing request and response datagrams with live glowing active node states.
+- **Wire Packet Inspector:** Displays simulated packet headers, DNS flags (`RD=1`, `QR=1`), query types (`A`, `AAAA`), and socket metadata.
+- **Zero Dependencies:** Pure HTML5, CSS3, and modern vanilla JavaScript. No frameworks, build steps, or package managers required.
 
-Wire Packet Inspector: Displays simulated packet headers, DNS flags (RD=1, QR=1), query types (A, AAAA), and socket metadata.
+---
 
-Zero Dependencies: Pure HTML5, CSS3, and modern vanilla JavaScript. No frameworks, build steps, or package managers required.
+## DNS Resolution Flow
 
-DNS Resolution Flow
 The visualizer walks through the following 8-step resolution sequence:
 
+```
 [Browser] ──(1. Cache Miss)──> [OS Resolver / Hosts]
                                       │
                                (2. Cache Miss)
@@ -35,77 +39,70 @@ The visualizer walks through the following 8-step resolution sequence:
                                           (5. Live A Record)
                                                 ▼
 [Browser Socket Connects (TCP/TLS)] <─── [Answer Cached Back]
-Browser Cache Check: Inspects browser-level DNS socket cache (chrome://net-internals#dns).
+```
 
-OS & Hosts File: Evaluates local operating system resolution cache (getaddrinfo, Windows dnscache) and static map overrides (/etc/hosts).
+1. **Browser Cache Check:** Inspects browser-level DNS socket cache (`chrome://net-internals#dns`).
+2. **OS & Hosts File:** Evaluates local operating system resolution cache (`getaddrinfo`, Windows `dnscache`) and static map overrides (`/etc/hosts`).
+3. **Local Gateway / Router:** Queries home router or local DNS forwarder cache (e.g., `dnsmasq`).
+4. **ISP Recursive Resolver:** Receives the query with the Recursion Desired flag (`RD=1`) set and checks its regional cache.
+5. **Root Nameserver Referral (`.`):** Queries 1 of the 13 Root Server clusters (`[a-m].root-servers.net`) to locate the delegated TLD registry.
+6. **TLD Nameserver Referral:** Contacts the Top-Level Domain registry server (e.g., Verisign for `.com`) for the domain's authoritative nameservers.
+7. **Authoritative Nameserver Query:** Queries the domain's authoritative nameservers for canonical `A` and `AAAA` records.
+8. **Answer Propagation & Caching:** Traverses back through the resolver hierarchy, populating TTL caches at each level and handing the IP back to the browser to initiate a TCP/TLS handshake.
 
-Local Gateway / Router: Queries home router or local DNS forwarder cache (e.g., dnsmasq).
+---
 
-ISP Recursive Resolver: Receives the query with the Recursion Desired flag (RD=1) set and checks its regional cache.
+## Getting Started
 
-Root Nameserver Referral (.): Queries 1 of the 13 Root Server clusters ([a-m].root-servers.net) to locate the delegated TLD registry.
+### Local Setup
 
-TLD Nameserver Referral: Contacts the Top-Level Domain registry server (e.g., Verisign for .com) for the domain's authoritative nameservers.
+1. Clone or download this repository:
+   ```bash
+   git clone https://github.com/<your-username>/<your-repo-name>.git
+   cd <your-repo-name>
+   ```
 
-Authoritative Nameserver Query: Queries the domain's authoritative nameservers for canonical A and AAAA records.
+2. Open `index.html` directly in any modern browser:
+   - Double-click `index.html`, or
+   - Start a local HTTP server:
+     ```bash
+     # Python 3
+     python3 -m http.server 8080
+     ```
+     Then open `http://localhost:8080` in your browser.
 
-Answer Propagation & Caching: Traverses back through the resolver hierarchy, populating TTL caches at each level and handing the IP back to the browser to initiate a TCP/TLS handshake.
+---
 
-Getting Started
-Local Setup
-Clone or download this repository:
+## Deployment to GitHub Pages
 
-Bash
+1. Push your repository to GitHub:
+   ```bash
+   git add index.html README.md
+   git commit -m "Add DNS visualizer and docs"
+   git push origin main
+   ```
+2. Navigate to your repository on **GitHub.com**.
+3. Go to **Settings** > **Pages** (under *Code and automation*).
+4. Under **Build and deployment**:
+   - **Source:** Select `Deploy from a branch`.
+   - **Branch:** Select `main` (or `master`) and folder `/(root)`.
+   - Click **Save**.
+5. Your visualizer will be live at:
+   ```text
+   https://<your-username>.github.io/<your-repo-name>/
+   ```
 
+---
 
-git clone https://github.com/<your-username>/<your-repo-name>.git
-cd <your-repo-name>
-Open index.html directly in any modern browser:
+## Technologies Used
 
-Double-click index.html, or
+- **HTML5:** Semantic document layout and vector canvas integration.
+- **CSS3:** Custom CSS variables, modern flex/grid layouts, keyframe glows, and responsive styling.
+- **Vanilla JavaScript (ES6+):** Async/await fetch mechanics, cubic-bezier SVG coordinate interpolation for packet paths.
+- **Google Public DoH API:** Real-time JSON DNS lookup endpoints.
 
-Start a local HTTP server:
+---
 
-Bash
+## License
 
-
-# Python 3
-python3 -m http.server 8080
-Then open http://localhost:8080 in your browser.
-
-Deployment to GitHub Pages
-Push your repository to GitHub:
-
-Bash
-git add index.html README.md
-git commit -m "Add DNS visualizer and docs"
-git push origin main
-Navigate to your repository on GitHub.com.
-
-Go to Settings > Pages (under Code and automation).
-
-Under Build and deployment:
-
-Source: Select Deploy from a branch.
-
-Branch: Select main (or master) and folder /(root).
-
-Click Save.
-
-Your visualizer will be live at:
-
-Plaintext
-
-
-https://<your-username>.github.io/<your-repo-name>/
-Technologies Used
-HTML5: Semantic document layout and vector canvas integration.
-
-CSS3: Custom CSS variables, modern flex/grid layouts, keyframe glows, and responsive styling.
-
-Vanilla JavaScript (ES6+): Async/await fetch mechanics, cubic-bezier SVG coordinate interpolation for packet paths.
-
-Google Public DoH API: Real-time JSON DNS lookup endpoints.
-
-License
-This project is licensed under the MIT License. Feel free to use, modify, and distribute it for educational or personal use.
+This project is licensed under the [MIT License](LICENSE). Feel free to use, modify, and distribute it for educational or personal use.
